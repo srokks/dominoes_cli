@@ -2,7 +2,7 @@
 import random
 
 
-def shufle_board(domino_set):
+def shuffle_board(domino_set):
     player_pieces = []
     computer_pieces = []
     stock = domino_set.copy()
@@ -17,17 +17,22 @@ def shufle_board(domino_set):
 
 
 def change_player(hands):
+    "Function changes current player "
     hands['cur_player'] = 'player' if hands['cur_player'] == 'computer' else 'computer'
 
 
 def add_to_snake(hands, tile, pos):
-    # define from with hand (play,com) -> inser tile to snake -> remove from hand
     playing_hand_name = 'player' if tile in hands['player'] else 'computer'
+    hands[playing_hand_name].remove(tile)
     if pos:
+        if hands['snake'][-1][-1] != tile[0]:
+            tile = list(reversed(tile))
         hands['snake'].append(tile)
     else:
+        if hands['snake'][0][0] != tile[1]:
+            tile = list(reversed(tile))
         hands['snake'].insert(0, tile)
-    hands[playing_hand_name].remove(tile)
+
 
 
 def print_hands(hands):
@@ -64,10 +69,12 @@ def print_interface(hands):
         print(pos, el, sep=':')
     print()
 
-def take_from_stack(hands,id):
-    if len(hands['stock'])>0:
+
+def take_from_stack(hands, id):
+    if len(hands['stock']) > 0:
         tile = hands['stock'].pop(-1)
         hands[id].append(tile)
+
 
 def computer_turn(hands):
     """Computer turn logic"""
@@ -75,11 +82,11 @@ def computer_turn(hands):
     max = len(hands['computer'])
     random_tile_num = random.randint(min, max)
     if random_tile_num == 0:
-        take_from_stack(hands,'computer')
+        take_from_stack(hands, 'computer')
     else:
-        tile = hands['computer'].__getitem__(abs(random_tile_num)-1)
-        pos = True if random_tile_num > 0 else False # defines add side for add_snake  # holds pos where add tile (left,rigth),false if move not posible
-        if verify_move(hands,tile,pos):  # pos has str in it
+        tile = hands['computer'].__getitem__(abs(random_tile_num) - 1)
+        pos = True if random_tile_num > 0 else False  # defines add side for add_snake  # holds pos where add tile (left,rigth),false if move not posible
+        if verify_move(hands, tile, pos):  # pos has str in it
             add_to_snake(hands, tile, pos)  # adds tile to snake
         else:
             computer_turn(hands)
@@ -92,25 +99,25 @@ def player_turn(hands):
         max = len(hands['player'])
         if input_.lstrip('-').isdigit():
             input_ = int(input_)
-            if input_ in range(min, max+1):
+            if input_ in range(min, max + 1):
                 break
         print('Invalid input. Please try again.')
     if input_ == 0:
-        take_from_stack(hands,'player')
+        take_from_stack(hands, 'player')
     else:
-        tile = hands['player'].__getitem__(abs(input_ )-1) # takes tile from players hand
-        pos = True if input_ > 0 else False # defines add side for add_snake
-        if verify_move(hands,tile,pos): # check if move is valid
-            pos = True if pos == 'r' else False
+        tile = hands['player'].__getitem__(abs(input_) - 1)  # takes tile from players hand
+        pos = True if input_ > 0 else False  # defines add side for add_snake
+        if verify_move(hands, tile, pos):  # check if move is valid
             add_to_snake(hands, tile, pos)  # adds tile to snake
         else:
             print("Illegal move. Please try again.")
             player_turn(hands)
 
-def verify_move(hands,tile,pos):
+
+def verify_move(hands, tile, pos):
     """Werfies if  tile can be added to snake. Returns l/r str if can and fals if not"""""
     # Checks with side is chosen and save val in side
-    if pos: # if side is right
+    if pos:  # if side is right
         side = hands['snake'][-1][-1]  # last right val of snake
     else:
         side = hands['snake'][0][0]  # last left val of snake
@@ -119,25 +126,44 @@ def verify_move(hands,tile,pos):
         return True
     else:
         return False
-def who_win(hand):
-    if len(hand['player'])==0:
+
+
+def who_win(hands):
+    "Checks status of board"
+    if len(hands['player']) == 0:
         return 'player'
-    if len(hand['computer'])==0:
+    if len(hands['computer']) == 0:
         return 'computer'
+    if check_draw(hands):
+        return 'draw'
     else:
         return False
+
+def check_draw(hands):
+    '''Function return True if theres draw in snake'''
+    if hands['snake'][0][0] == hands['snake'][-1][-1]: # if both ends same
+        end = hands['snake'][0][0]  # save end val
+        if [x for el in hands['snake'] for x in el].count(end) == 8: # if theres 8 vals in snake
+            return True  # it's draw return True
+    else:
+        return False  # you can play
+
 def game_loop():
     domino_set = list([j, i] for i in range(7) for j in range(i + 1))
-    hands = shufle_board(domino_set)  # dict of stock,plater,comp of list of hands
+    hands = shuffle_board(domino_set)  # dict of stock,plater,comp of list of hands
     determine_first_move(hands)
     while True:
-        print_interface(hands)
-        win_stat = who_win(hands)
+        # Main game loop
+        print_interface(hands)  # prints board
+        win_stat = who_win(hands) # checks win condition
         if win_stat == 'player':
             print("Status: The game is over. You won!")
             break
         elif win_stat == 'computer':
             print("Status: The game is over. The computer won!")
+            break
+        elif win_stat == 'draw':
+            print("Status: The game is over. It's a draw!")
             break
         if hands['cur_player'] == "computer":
             input("Status: Computer is about to make a move. Press Enter to continue...")
