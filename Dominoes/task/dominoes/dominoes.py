@@ -78,18 +78,23 @@ def take_from_stack(hands, id):
 
 def computer_turn(hands):
     """Computer turn logic"""
-    min = -len(hands['computer'])
-    max = len(hands['computer'])
-    random_tile_num = random.randint(min, max)
-    if random_tile_num == 0:
-        take_from_stack(hands, 'computer')
-    else:
-        tile = hands['computer'].__getitem__(abs(random_tile_num) - 1)
-        pos = True if random_tile_num > 0 else False  # defines add side for add_snake  # holds pos where add tile (left,rigth),false if move not posible
-        if verify_move(hands, tile, pos):  # pos has str in it
-            add_to_snake(hands, tile, pos)  # adds tile to snake
+    list_of_vals = [x for el in hands['computer'] for x in el]
+    count_of_vals = {i: list_of_vals.count(i) for i in range(0, 7)}
+    tiles_score = {str(el): count_of_vals[el[0]] + count_of_vals[el[1]] for el in hands['computer']}
+    tiles_score = dict(sorted(tiles_score.items(), key=lambda item: item[1], reverse=True))
+    while len(tiles_score) > 0:
+        tile = max(tiles_score, key=lambda key: tiles_score[key]) # takes max tile from tiles_score
+        tile_list = [int(tile[1]),int(tile[4])]
+        pos = None
+        if verify_move(hands, tile_list, True):
+            pos = True
+        elif verify_move(hands, tile_list, False):
+            pos = False
+        if pos is not None:
+            add_to_snake(hands, tile_list, pos)
+            break
         else:
-            computer_turn(hands)
+            tiles_score.pop(tile)
 
 
 def player_turn(hands):
@@ -139,14 +144,16 @@ def who_win(hands):
     else:
         return False
 
+
 def check_draw(hands):
     '''Function return True if theres draw in snake'''
-    if hands['snake'][0][0] == hands['snake'][-1][-1]: # if both ends same
+    if hands['snake'][0][0] == hands['snake'][-1][-1]:  # if both ends same
         end = hands['snake'][0][0]  # save end val
-        if [x for el in hands['snake'] for x in el].count(end) == 8: # if theres 8 vals in snake
+        if [x for el in hands['snake'] for x in el].count(end) == 8:  # if theres 8 vals in snake
             return True  # it's draw return True
     else:
         return False  # you can play
+
 
 def game_loop():
     domino_set = list([j, i] for i in range(7) for j in range(i + 1))
