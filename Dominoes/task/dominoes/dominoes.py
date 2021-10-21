@@ -71,7 +71,6 @@ def take_from_stack(hands,id):
 
 def computer_turn(hands):
     """Computer turn logic"""
-    input("Status: Computer is about to make a move. Press Enter to continue...")
     min = -len(hands['computer'])
     max = len(hands['computer'])
     random_tile_num = random.randint(min, max)
@@ -79,11 +78,15 @@ def computer_turn(hands):
         take_from_stack(hands,'computer')
     else:
         tile = hands['computer'].__getitem__(abs(random_tile_num)-1)
-        add_to_snake(hands, tile, True if random_tile_num > 0 else False)
+        pos = verify_move(hands, tile)  # holds pos where add tile (left,rigth),false if move not posible
+        if pos:  # pos has str in it
+            pos = True if pos == 'r' else False  # defines add side for add_snake
+            add_to_snake(hands, tile, pos)  # adds tile to snake
+        else:
+            computer_turn(hands)
 
 
 def player_turn(hands):
-    print("Status: It's your turn to make a move. Enter your command.")
     while True:
         input_ = input()
         min = -len(hands['player'])
@@ -96,12 +99,25 @@ def player_turn(hands):
     if input_ == 0:
         take_from_stack(hands,'player')
     else:
-        # get tile -> insert to snake ->
-        tile = hands['player'].__getitem__(abs(input_ )-1)
-    pos = True if input_ > 0 else False
-    if verify_move(tile,pos):
-        add_to_snake(hands, tile, pos)
-def verify move()
+        tile = hands['player'].__getitem__(abs(input_ )-1) # takes tile from players hand
+        pos = verify_move(hands,tile) # holds pos where add tile (left,rigth),false if move not posible
+        if pos: # pos has str in it
+            pos = True if pos == 'r' else False  # defines add side for add_snake
+            add_to_snake(hands, tile, pos)  # adds tile to snake
+        else:
+            print("Illegal move. Please try again.")
+            player_turn(hands)
+
+def verify_move(hands,tile):
+    """Werfies if  tile can be added to snake. Returns l/r str if can and fals if not"""""
+    right_side = hands['snake'][-1][-1]  # last right val of snake
+    left_side = hands['snake'][0][0]  # last left val of snake
+    if tile[0] == right_side:
+        return 'r'
+    elif tile[1] == left_side:
+        return 'l'
+    else:
+        return False
 def who_win(hand):
     if len(hand['player'])==0:
         return 'player'
@@ -123,8 +139,10 @@ def game_loop():
             print("Status: The game is over. The computer won!")
             break
         if hands['cur_player'] == "computer":
+            input("Status: Computer is about to make a move. Press Enter to continue...")
             computer_turn(hands)
         elif hands['cur_player'] == 'player':
+            print("Status: It's your turn to make a move. Enter your command.")
             player_turn(hands)
         change_player(hands)
 
