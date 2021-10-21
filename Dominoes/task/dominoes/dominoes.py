@@ -78,9 +78,8 @@ def computer_turn(hands):
         take_from_stack(hands,'computer')
     else:
         tile = hands['computer'].__getitem__(abs(random_tile_num)-1)
-        pos = verify_move(hands, tile)  # holds pos where add tile (left,rigth),false if move not posible
-        if pos:  # pos has str in it
-            pos = True if pos == 'r' else False  # defines add side for add_snake
+        pos = True if random_tile_num > 0 else False # defines add side for add_snake  # holds pos where add tile (left,rigth),false if move not posible
+        if verify_move(hands,tile,pos):  # pos has str in it
             add_to_snake(hands, tile, pos)  # adds tile to snake
         else:
             computer_turn(hands)
@@ -100,22 +99,24 @@ def player_turn(hands):
         take_from_stack(hands,'player')
     else:
         tile = hands['player'].__getitem__(abs(input_ )-1) # takes tile from players hand
-        pos = verify_move(hands,tile) # holds pos where add tile (left,rigth),false if move not posible
-        if pos: # pos has str in it
-            pos = True if pos == 'r' else False  # defines add side for add_snake
+        pos = True if input_ > 0 else False # defines add side for add_snake
+        if verify_move(hands,tile,pos): # check if move is valid
+            pos = True if pos == 'r' else False
             add_to_snake(hands, tile, pos)  # adds tile to snake
         else:
             print("Illegal move. Please try again.")
             player_turn(hands)
 
-def verify_move(hands,tile):
+def verify_move(hands,tile,pos):
     """Werfies if  tile can be added to snake. Returns l/r str if can and fals if not"""""
-    right_side = hands['snake'][-1][-1]  # last right val of snake
-    left_side = hands['snake'][0][0]  # last left val of snake
-    if tile[0] == right_side:
-        return 'r'
-    elif tile[1] == left_side:
-        return 'l'
+    # Checks with side is chosen and save val in side
+    if pos: # if side is right
+        side = hands['snake'][-1][-1]  # last right val of snake
+    else:
+        side = hands['snake'][0][0]  # last left val of snake
+    # Checks if value is in tile
+    if side in tile:
+        return True
     else:
         return False
 def who_win(hand):
