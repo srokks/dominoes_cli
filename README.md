@@ -2,7 +2,7 @@
 
 ## Info
 
-Simple Dominoes game project from JetBrainAcademy python learning track.
+Simple Dominoes game project from <a href="https://hyperskill.org/projects/146?track=2">JetBrainAcademy Python Learning Track</a>.
 Allows to play dominoes in CLI with computer with base AI.
 Game recognizes if move is invalid and also revert domino pice automatic if you choose to use it.
 Computer chooses his tiles based on popularity of his own tiles. Both pla 
